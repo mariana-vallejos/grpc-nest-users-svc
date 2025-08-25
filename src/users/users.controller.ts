@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { GrpcMethod } from '@nestjs/microservices';
+import { type CreateUserRequest, type DeleteUserRequest, type DeleteUserResponse, type GetUserByIdRequest, type UpdateUserRequest, USER_SERVICE_NAME, type UserListResponse, type UserResponse } from './user.pb';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @GrpcMethod(USER_SERVICE_NAME, 'CreateUser')
+  createUser(data: CreateUserRequest): Promise<UserResponse> {
+    return this.usersService.createUser(data);
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  // @GrpcMethod(USER_SERVICE_NAME, 'GetAllUsers')
+  // getAllUsers(): Promise<UserListResponse> {
+  //   return this.usersService.getAllUsers();
+  // }
+
+  @GrpcMethod(USER_SERVICE_NAME, 'GetUserById')
+  getUserById(data: GetUserByIdRequest): Promise<UserResponse> {
+    return this.usersService.getUserById(data);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @GrpcMethod(USER_SERVICE_NAME, 'UpdateUser')
+  updateUser(data: UpdateUserRequest): Promise<UserResponse> {
+    return this.usersService.updateUser(data);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @GrpcMethod(USER_SERVICE_NAME, 'DeleteUser')
+  deleteUser(data: DeleteUserRequest): Promise<DeleteUserResponse> {
+    return this.usersService.deleteUser(data);
   }
 }
