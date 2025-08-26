@@ -4,14 +4,21 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserRequest, DeleteUserRequest, DeleteUserResponse, GetUserByIdRequest, UpdateUserRequest, UserListResponse, UserResponse } from './user.pb';
+import {
+  CreateUserRequest,
+  DeleteUserRequest,
+  GenericResponse,
+  GetUserByIdRequest,
+  UpdateUserRequest,
+  UserList,
+} from './user.pb';
 
 @Injectable()
 export class UsersService {
   @InjectRepository(User)
-  private readonly repository: Repository<User>
+  private readonly repository: Repository<User>;
 
-  async createUser(data: CreateUserRequest): Promise<UserResponse> {
+  async createUser(data: CreateUserRequest): Promise<User> {
     try {
       const user = this.repository.create({
         username: data.username,
@@ -21,58 +28,76 @@ export class UsersService {
 
       const saved = await this.repository.save(user);
 
-      return { user: this.toUserDto(saved) };
+      return saved;
     } catch (error) {
       console.error('Error creating user:', error);
-      throw new Error('Failed to create user')
+      throw new Error('Failed to create user');
     }
-
   }
 
-  // async getAllUsers(): Promise<UserListResponse> {
-  //   const users = await this.repository.find();
-  //   return {
-  //     users: users.map((u) => this.toUserDto(u)),
-  //   };
+  async getAllUsers(): Promise<GenericResponse> {
+    try {
+      const users = await this.repository.find();
+
+      const userList: UserList = {
+        users: users.map((u) => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          createdAt: u.created_at.toISOString(),
+        })),
+      };
+
+      return {
+        status: 200,
+        userList,
+      };
+      
+    } catch (err) {
+      return {
+        status: 500,
+        error: 'Internal server error',
+      };
+    }
+  }
+
+  // async getUserById(data: GetUserByIdRequest): Promise<UserResponse> {
+  //   const user = await this.repository.findOneBy({ id: +data.id });
+
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+
+  //   return { user: this.toUserDto(user) };
   // }
 
-  async getUserById(data: GetUserByIdRequest): Promise<UserResponse> {
-    const user = await this.repository.findOneBy({ id: +data.id });
+  // async updateUser(data: UpdateUserRequest): Promise<UserResponse> {
+  //   const user = await this.repository.findOneBy({ id: +data.id });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
 
-    return { user: this.toUserDto(user) };
-  }
+  //   user.username = data.username ?? user.username;
+  //   user.email = data.email ?? user.email;
 
-  async updateUser(data: UpdateUserRequest): Promise<UserResponse> {
-    const user = await this.repository.findOneBy({ id: +data.id });
+  //   const updated = await this.repository.save(user);
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  //   return { user: this.toUserDto(updated) };
+  // }
 
-    user.username = data.username ?? user.username;
-    user.email = data.email ?? user.email;
+  // async deleteUser(data: DeleteUserRequest): Promise<DeleteUserResponse> {
+  //   const result = await this.repository.delete({ id: +data.id });
 
-    const updated = await this.repository.save(user);
+  //   return { success: result.affected! > 0 };
+  // }
 
-    return { user: this.toUserDto(updated) };
-  }
-
-  async deleteUser(data: DeleteUserRequest): Promise<DeleteUserResponse> {
-    const result = await this.repository.delete({ id: +data.id });
-
-    return { success: result.affected! > 0 };
-  }
-
-  private toUserDto(user: User): UserResponse['user'] {
-    return {
-      id: String(user.id),
-      username: user.username,
-      email: user.email,
-      createdAt: user.created_at.toISOString(),
-    };
-  }
+  // private toUserDto(user: User): UserResponse['user'] {
+  //   return {
+  //     id: String(user.id),
+  //     username: user.username,
+  //     email: user.email,
+  //     createdAt: user.created_at.toISOString(),
+  //   };
+  // }
 }

@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty, IsString } from "class-validator"
+import { CreateUserRequest } from "../user.pb"
 
-export class CreateUserDto {
+export class CreateUserDto implements CreateUserRequest {
     @IsString()
     @IsNotEmpty()
     username: string
