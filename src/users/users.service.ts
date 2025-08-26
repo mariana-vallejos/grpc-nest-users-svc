@@ -52,7 +52,7 @@ export class UsersService {
         status: 200,
         userList,
       };
-      
+
     } catch (err) {
       return {
         status: 500,
@@ -61,15 +61,35 @@ export class UsersService {
     }
   }
 
-  // async getUserById(data: GetUserByIdRequest): Promise<UserResponse> {
-  //   const user = await this.repository.findOneBy({ id: +data.id });
+  async getUserById(data: GetUserByIdRequest): Promise<GenericResponse> {
+    try {
+      const user = await this.repository.findOneBy({ id: data.id });
 
-  //   if (!user) {
-  //     throw new NotFoundException('User not found');
-  //   }
+      if (!user) {
+        return {
+          status: 404,
+          error: 'User not found',
+        };
+      }
 
-  //   return { user: this.toUserDto(user) };
-  // }
+      return {
+        status: 200,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.created_at.toISOString(),
+        },
+      };
+    } catch (error) {
+      console.error('Error in getUserById:', error);
+      return {
+        status: 500,
+        error: 'Internal server error',
+      };
+    }
+  }
+
 
   // async updateUser(data: UpdateUserRequest): Promise<UserResponse> {
   //   const user = await this.repository.findOneBy({ id: +data.id });

@@ -58,10 +58,10 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
-  // @GrpcMethod(USER_SERVICE_NAME, 'GetUserById')
-  // getUserById(data: GetUserByIdRequest): Promise<UserResponse> {
-  //   return this.usersService.getUserById(data);
-  // }
+  @GrpcMethod(USER_SERVICE_NAME, 'GetUserById')
+  getUserById(data: GetUserByIdRequest): Promise<GenericResponse> {
+    return this.usersService.getUserById(data);
+  }
 
   // @GrpcMethod(USER_SERVICE_NAME, 'UpdateUser')
   // updateUser(data: UpdateUserRequest): Promise<UserResponse> {
